@@ -1,0 +1,22 @@
+<html>
+<body>
+</body>
+
+<script>
+function callServer() {
+
+}
+
+function httpGet(theUrl)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+</script>
+
+<input type="button" value="My Button" 
+onclick="alert(httpGet('http://localhost:8080'));" />
+
+</html>
