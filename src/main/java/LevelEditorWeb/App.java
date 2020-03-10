@@ -10,6 +10,8 @@ public class App implements Runnable {
 
     static final int PORT = 8080;
 
+    enum Verb {GET, POST, PUT, DELETE, PATCH};
+
     private Socket connect;
 
     public App(Socket c) {
@@ -32,9 +34,17 @@ public class App implements Runnable {
         }
     }
 
+    String parseRequest(Verb verb, String path) {
+	System.out.println("path: " + path);
+	StringTokenizer parse = new StringTokenizer(path, "/", false );
+	return "request result = " + parse.nextToken() + "->" + parse.nextToken();  
+    }
+
     @Override
     public void run() {
-        BufferedReader in = null; PrintWriter out = null; BufferedOutputStream dataOut = null;
+        BufferedReader in = null; 
+	PrintWriter out = null; 
+	BufferedOutputStream dataOut = null;
 
         try {
             in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
@@ -43,30 +53,55 @@ public class App implements Runnable {
             String input = in.readLine();
             StringTokenizer parse = new StringTokenizer(input);
             String method = parse.nextToken().toUpperCase();
+	    String data = "";
+	    String head;
+	    Verb verb = Verb.valueOf(method);
+	    byte[] fileData = parseRequest(verb, parse.nextToken()).getBytes();
 
-            if (!method.equals("GET")  &&  !method.equals("HEAD")) {
-                System.out.println("FUCK YOU");
-            } else {
+	    if (verb == Verb.POST) {		
+		head = in.readLine();
+		while( head != null && !head.trim().isEmpty() ) {
+		    head = in.readLine();
+		}
 
-                byte[] fileData = "yeah bro".getBytes();
-                int fileLength = fileData.length;
-                String contentType = "text/plain";
+		try {
+		    head = null;
+		    if ( in.ready() ) {
+			head = in.readLine();
+		    }
 
-                if (method.equals("GET")) {
+		    while( head != null ) { 
+			if (head != null && !head.trim().isEmpty()) {
+			    data += head;
+			}
 
-                    out.println("HTTP/1.1 200 OK");
-                    out.println("Access-Control-Allow-Origin: *");
-                    out.println("Content-type: " + contentType);
-                    out.println("Content-length: " + fileLength);
+			head = null;
 
-                    out.println();
-                    out.flush();
-
-                    dataOut.write(fileData, 0, fileLength);
-                    dataOut.flush();
-                }
-            }
-
+			if ( in.ready() ) {
+			    head = in.readLine();
+			}
+		    }
+		} catch (Exception e) {
+		}	      
+		fileData = data.getBytes();
+	    }
+	    
+	    
+	    int fileLength = fileData.length;
+	    String contentType = "text/plain";
+	    
+		    
+	    out.println("HTTP/1.1 200 OK");
+	    out.println("Access-Control-Allow-Origin: *");
+	    out.println("Content-type: " + contentType);
+	    out.println("Content-length: " + fileLength);
+	    
+	    out.println();
+	    out.flush();
+	    
+	    dataOut.write(fileData, 0, fileLength);
+	    dataOut.flush();
+                
         } catch (IOException ioe) {
             System.err.println("Server error : " + ioe);
         } finally {

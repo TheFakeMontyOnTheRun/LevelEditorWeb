@@ -3,10 +3,6 @@
 </body>
 
 <script>
-function callServer() {
-
-}
-
 function httpGet(theUrl)
 {
     var xmlHttp = new XMLHttpRequest();
@@ -14,9 +10,21 @@ function httpGet(theUrl)
     xmlHttp.send( null );
     return xmlHttp.responseText;
 }
+
+function httpPost(theUrl, data)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "POST", theUrl, false ); // false for synchronous request
+    xmlHttp.send( data + "\n\n" );
+    return xmlHttp.responseText;
+}
+
+function callServer() {
+
+}
 </script>
 
 <input type="button" value="My Button" 
-onclick="alert(httpGet('http://localhost:8080'));" />
+onclick="alert(httpGet('http://localhost:8080/sector/1'));" />
 
 </html>
