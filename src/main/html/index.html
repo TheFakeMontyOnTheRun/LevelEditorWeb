@@ -1,32 +1,58 @@
 <html>
+  <head>
+    <script src="scripts.js" type="text/javascript"></script>
+    
+    <style>
+      div.bordered {
 
-<head>
-<script src="scripts.js" type="text/javascript"></script>
-</head>
+      }
+    </style>
+    
+  </head>
+  
+  <body>
+    <div class="bordered" style="float:top">
+      <input type="button" value="My Button"
+	     onclick="alert(httpGet('http://localhost:8080/sector/1'));"/>
+      <input type="range" min="0" max="255" value="0" class="slider" id="paletteEntry">
+      <div id="pet-entry">0</div>
+    </div>
+    
+    <div class="bordered">
+      <div class="bordered" style="float:left">
+	<canvas id="canvas" width="512" height="512" class="bordered">
+	  Oh shit!
+	</canvas>
+      </div>
+      
+      <div class="bordered" style="float:right">
+	<canvas id="preview" width="320" height="240" class="bordered" style="background-color: black;">
+	</canvas>
+      </div>
+    </div>
+    
+    
+    <script>
+      window.onload = function(){
+      
+      
+      init();
+      draw();
+      
+      const canvas = document.querySelector('canvas');
+      const slider = document.getElementById("paletteEntry");
+      const entry = document.getElementById("pet-entry");
 
-<body>
+      slider.oninput = function() {
+      entry.innerHTML = this.value;
+      } 
 
-<canvas id="canvas" width="512" height="512">
-    Oh shit!
-</canvas>
-
-<input type="button" value="My Button"
-       onclick="alert(httpGet('http://localhost:8080/sector/1'));"/>
-
-<script>
-window.onload = function(){
-
-
-  init();
-  draw();
-
-  const canvas = document.querySelector('canvas');
-
-  canvas.addEventListener('mousedown', function(e) {
-getCursorPosition(canvas, e);
-  });
-}
-</script>
-
-</body>
+      canvas.addEventListener('mousedown', function(e) {
+      getCursorPosition(canvas, e, slider.value);
+      entry.innerHTML = "" + slider.value;
+      });
+      }
+    </script>
+    
+  </body>
 </html>

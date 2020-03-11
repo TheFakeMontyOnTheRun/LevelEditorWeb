@@ -34,24 +34,28 @@ function draw() {
 	var ctx = canvas.getContext('2d');
 	var x = 0;
 	var y = 0;
-	
+	var lastShade = -1;
+
 	for ( y = 0; y < 128; ++y ) {
 	    for ( x = 0; x < 128; ++x ) {
-		if ( map[ ( y * 128 ) +x  ] == 1) {
-		    ctx.fillRect( x * 4, y * 4, 4, 4);
-		} else {
-		    ctx.strokeRect( x * 4, y * 4, 4, 4);
+
+		const shade =  map[ ( y * 128 ) + x  ] ;
+		ctx.strokeRect( x * 4, y * 4, 4, 4);
+		if (shade != lastShade) {
+		    ctx.fillStyle = 'rgb( ' + (shade) + ',' + ((shade * 16 ) % 256) + ',' + (256 - shade) + ')';
+		    lastShade = shade;
 		}
+		ctx.fillRect( x * 4, y * 4, 4, 4);
 	    }
 	}    	
 	ctx.strokeRect( 0, 0, 1024, 1024);
     }
 }
 
-function getCursorPosition(canvas, event) {
+function getCursorPosition(canvas, event, value) {
     const rect = canvas.getBoundingClientRect();
     const x = Math.round((event.clientX - rect.left) / 4);
     const y = Math.round((event.clientY - rect.top) / 4);
-    map[ ( y * 128 ) + x  ] = 1;
+    map[ ( y * 128 ) + x  ] = value;
     draw();
 }
