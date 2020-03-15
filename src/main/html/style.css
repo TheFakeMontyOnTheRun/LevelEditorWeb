@@ -1,0 +1,14 @@
+p {
+  text-align: center;
+}
+
+li span {
+   background: #FFF;
+   color: red;
+}
+
+
+div.bordered {
+      cursor: crosshair;
+      background: #CCC;
+}

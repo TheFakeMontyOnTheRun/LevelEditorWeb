@@ -3,31 +3,39 @@
   <head>
     <script src="scripts.js" type="text/javascript"></script>
     <title>Design Motherfucker</title>
-    <style>
-      div.bordered {
-      cursor: crosshair;
-      }
-    </style>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="style.css"/>
     
   </head>
   
   <body>
     <div class="bordered" style="float:top">
+
       <input type="button" value="My Button"
 	     onclick="alert(httpGet('http://localhost:8080/sector/1'));"/>
+
       <input type="range" min="0" max="255" value="0" class="slider" id="paletteEntry">
+
       <div id="pet-entry">0</div>
 
       <span>
 	<label for="geometryType">Geometry type:</label>
-	
 	<select id="geometryType">
 	  <option value="cube">Cube</option>
 	  <option value="nearleft">Near left</option>
 	  <option value="nearright">Near right</option>
-	</select>
-	
+	</select>	
       </span>
+
+      <div>
+	<ul>
+	  <li><span>yey<span>Bla</li>
+	  <li>Ble</li>
+	  <li>Bli</li>
+	  <li>Blo</li>
+	  <li>Blu</li>
+	</ul>
+      </div>
     </div>
     
     <div class="bordered">
@@ -81,7 +89,14 @@
       break;
       }
       });
+
+
+
+
       }
+
+
+
     </script>
     
   </body>
