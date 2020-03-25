@@ -1,12 +1,40 @@
 "use strict";
 
-var map = new Array( 64 * 64 );
-var palette = new Array( 256 );
+var cursorX = 32;
+var cursorY = 32;
+var shapes = new Array(256);
+var totalShapes = 0;
+var activeVertex = 0;
+var activeShape = 1;
 
-class Entry {
+class Vertex {
     constructor() {
-	this.geometryType = 0;
-	this.floorHeight = 0;
+	this.x = 0;
+	this.y = 0;
+    }
+}
+
+class Shape {
+    constructor(pivotX, pivotY) {
+	this.vertex = new Array(8);
+	this.usedVertex = 4;
+
+	this.vertex[0] = new Vertex();
+	this.vertex[1] = new Vertex();
+	this.vertex[2] = new Vertex();
+	this.vertex[3] = new Vertex();
+
+	this.vertex[0].x = pivotX - 1;
+	this.vertex[0].y = pivotY - 1;
+	this.vertex[1].x = pivotX + 1;
+	this.vertex[1].y = pivotY - 1;
+	this.vertex[2].x = pivotX + 1;
+	this.vertex[2].y = pivotY + 1;
+	this.vertex[3].x = pivotX - 1;
+	this.vertex[3].y = pivotY + 1;		
+
+
+
 	this.floorHeightLength = 0;
 	this.ceilingHeight = 0;
 	this.ceilingHeightLength = 0;
@@ -21,11 +49,8 @@ class Entry {
 
 
 function initPalette() {
-    var c = 0;
-    for( c = 0; c < 256; ++c ) {
-	var entry = new Entry();
-	palette[ c ] = entry;
-    }
+    
+
 }
 
 function httpGet(theUrl) {
@@ -87,16 +112,13 @@ function initWASM() {
 }
 
 function init() {
-    var x = 0;
-    var y = 0;
-    for ( y = 0; y < 64; ++y ) {
-	for ( x = 0; x < 64; ++x ) {
-	    map[ ( y * 64 ) +x  ] = 0;
-	}
-    }
-    initPalette();
-    initWASM();
+    addNewShape();
+    addNewShape();
+    totalShapes = 2;
+    //initWASM();
 }
+
+
 
 function draw() {
     var canvas = document.getElementById('canvas');
@@ -107,93 +129,158 @@ function draw() {
 	var lastIndex = -1;
 	var entry;
 	ctx.lineWidth = 1;
+	ctx.fillStyle = '#FFF';
+	ctx.strokeStyle = '#666';
 	for ( y = 0; y < 64; ++y ) {
 	    for ( x = 0; x < 64; ++x ) {
-
-		const index =  map[ ( y * 64 ) + x  ] ;
-		var r = index;
-		var g = (index * 16) % 256;
-		var b = 256 - index;
-
-
-		if (index != lastIndex) {
-		    lastIndex = index;
-		    entry = palette[index];
-
-		    switch(entry.geometryType) {
-		    case 0: //cube
-			ctx.fillStyle = 'rgb( ' + r + ',' + g + ',' + b + ')';
-			ctx.strokeStyle = 'rgb( ' + (256 - r) + ',' + (256 - g) + ',' + (256 - b) + ')';
-			break;
-		    case 1: //near left
-		    case 2: //near right
-			ctx.fillStyle = 'rgb( ' + (256 - r) + ',' + (256 - g) + ',' + (256 - b) + ')';
-			ctx.strokeStyle = 'rgb( ' + r + ',' + g + ',' + b + ')';
-			break;
-		    }
-		}
-
-
-		switch(entry.geometryType) {
-		case 0: //cube
-		    ctx.fillRect( x * 8, y * 8, 8, 8);
-		    break;
-		case 1: //near left
-		    ctx.fillRect( x * 8, y * 8, 8, 8);
-		    ctx.beginPath();
-		    ctx.moveTo((x * 8), (y * 8) + 8);
-		    ctx.lineTo((x * 8) + 8, (y * 8));
-		    ctx.stroke();
-		    break;
-		case 2: //near right
-		    ctx.fillRect( x * 8, y * 8, 8, 8);
-		    ctx.beginPath();
-		    ctx.moveTo((x * 8), (y * 8));
-		    ctx.lineTo((x * 8) + 8, (y * 8) + 8);
-		    ctx.stroke();
-		    break;
-		}
-
-		ctx.strokeStyle = '#000';
+		ctx.fillRect( x * 8, y * 8, 8, 8);
 		ctx.strokeRect( x * 8, y * 8, 8, 8);
 	    }
-	}    	
-	ctx.strokeRect( 0, 0, 1024, 1024);
+	}
+
+	ctx.strokeStyle = '#F00';
+	ctx.beginPath();
+	ctx.moveTo(0, cursorY * 8);
+	ctx.lineTo(64 *8, (cursorY * 8));
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.moveTo((cursorX * 8), 0);
+	ctx.lineTo((cursorX * 8), 64 * 8);
+	ctx.stroke();
+
+
+	var index = 0;
+	
+	for ( index = 1; index < totalShapes; ++index ) { 
+	    var shape = shapes[index];
+	    
+	    if (index == activeShape) {
+		ctx.strokeStyle = '#0F0';
+	    } else {
+		ctx.strokeStyle = '#000';
+	    }
+	    
+	    ctx.beginPath();
+	    ctx.moveTo( shape.vertex[0].x * 8, shape.vertex[0].y * 8);
+	    var c = 0;
+
+	    for ( c = 1; c < shape.usedVertex; ++c ) {
+		ctx.lineTo( shape.vertex[c].x * 8, shape.vertex[c].y * 8);
+
+		if (index == activeShape ) {
+		    if ( c == activeVertex ) {			
+			ctx.fillStyle = '#0F0';
+		    } else {
+			ctx.fillStyle = '#00F';			
+		    }
+		} else {
+		    ctx.fillStyle = '#000';
+		}
+		
+		ctx.fillRect( shape.vertex[c].x * 8, shape.vertex[c].y * 8, 8, 8);	
+		
+	    }
+
+	    ctx.lineTo( shape.vertex[0].x * 8, shape.vertex[0].y * 8);
+
+	    if (index == activeShape ) {
+		if ( 0 == activeVertex ) {			
+		    ctx.fillStyle = '#0F0';
+		} else {
+		    ctx.fillStyle = '#00F';			
+		}
+	    } else {
+		ctx.fillStyle = '#000';
+	    }	    
+	    
+	    ctx.fillRect( shape.vertex[0].x * 8, shape.vertex[0].y * 8, 8, 8);		    
+	    
+	    ctx.stroke();   
+	}
     }
+
+    document.getElementById("shape").value = activeShape;
+    document.getElementById("shape").min = 1;
+    document.getElementById("shape").max = totalShapes - 1;
+    document.getElementById("shape-entry").innerHTML = activeShape;
+
+
+    document.getElementById("vertex").value = activeVertex;
+    document.getElementById("vertex").min = 0;
+    document.getElementById("vertex").max = shapes[activeShape].usedVertex - 1;
+    document.getElementById("vertex-entry").innerHTML = activeVertex;    
 }
 
-
-function setGeometryType(newGeometryType) {
-    var combo = document.getElementById('geometryType');
-    var slider = document.getElementById('paletteEntry');
-    var entryIndex = slider.value;
-    var entry = palette[entryIndex];
-
-    entry.geometryType = newGeometryType;
-
-    paletteEntry[entryIndex] = entry;
-}
-
-function updateActivePaletteEntry() {
-    var combo = document.getElementById('geometryType');
-    var slider = document.getElementById('paletteEntry');
-    var entryIndex = slider.value;
-    var entry = palette[entryIndex];
-
-    combo.selectedIndex = entry.geometryType;
-}
-
-function getIndexFromCursorPosition(canvas, e, slider) {
-    const x = Math.round((event.clientX - 4 - rect.left) / 8);
-    const y = Math.round((event.clientY - 4 - rect.top) / 8);
-    const value = map[ ( y * 64 ) + x  ];
-    combo.selectedIndex = value;
-}
-
-function getCursorPosition(canvas, event, value) {
-    const rect = canvas.getBoundingClientRect();
-    const x = Math.round((event.clientX - 4 - rect.left) / 8);
-    const y = Math.round((event.clientY - 4 - rect.top) / 8);
-    map[ ( y * 64 ) + x  ] = value;
+function updateActiveShape(shapeNum) {
+    activeShape = shapeNum;
+    activeVertex = 0;
     draw();
 }
+
+
+function updateActiveVertex(vertexNum) {
+    activeVertex = vertexNum;
+    draw();    
+}
+
+function getCursorPosition(canvas, event) {
+    const rect = canvas.getBoundingClientRect();
+    cursorX = Math.round((event.clientX - 4 - rect.left) / 8);
+    cursorY = Math.round((event.clientY - 4 - rect.top) / 8);
+    draw();
+}
+
+function addNewShape() {
+    var shape = new Shape(cursorX, cursorY);
+    ++totalShapes;
+    shapes[totalShapes- 1] = shape;
+    activeVertex = 0;
+    activeShape = totalShapes - 1;
+    draw();
+}
+
+function addNewVertex() {
+
+    if (shapes[activeShape].usedVertex >= 8 ) {
+	return;
+    }
+
+    shapes[activeShape].usedVertex++;
+    var vertex = new Vertex();
+    vertex.x = cursorX;
+    vertex.y = cursorY;
+    shapes[activeShape].vertex[shapes[activeShape].usedVertex - 1] = vertex;
+    activeVertex = shapes[activeShape].usedVertex - 1;
+    draw();    
+}
+
+function moveVertex() {
+    shapes[activeShape].vertex[activeVertex].x = cursorX;
+    shapes[activeShape].vertex[activeVertex].y = cursorY;
+    draw();
+}
+
+function deleteShape() {
+    if (totalShapes <= 2 ) {
+	return;
+    }
+    
+    
+    shapes.splice(activeShape, 1)
+    totalShapes--;
+    activeShape = totalShapes - 1;
+    draw();
+}
+
+function deleteVertex() {
+
+    if ( shapes[activeShape].usedVertex <= 3) {
+	return;
+    }
+
+    shapes[activeShape].usedVertex--;
+    activeVertex = shapes[activeShape].usedVertex - 1;    
+    draw();
+}
+

@@ -13,30 +13,28 @@
 
       <input type="button" value="My Button"
 	     onclick="alert(httpGet('http://localhost:8080/sector/1'));"/>
-
-      <input type="range" min="0" max="255" value="0" class="slider" id="paletteEntry">
-
-      <div id="pet-entry">0</div>
-
-      <span>
-	<label for="geometryType">Geometry type:</label>
-	<select id="geometryType">
-	  <option value="cube">Cube</option>
-	  <option value="nearleft">Near left</option>
-	  <option value="nearright">Near right</option>
-	</select>	
-      </span>
-
-      <div>
-	<ul>
-	  <li><span>yey<span>Bla</li>
-	  <li>Ble</li>
-	  <li>Bli</li>
-	  <li>Blo</li>
-	  <li>Blu</li>
-	</ul>
-      </div>
+      <ul>
+	<li>
+	  <input type="range" min="1" max="1" value="1" class="slider" id="shape">
+	  <div id="shape-entry">0</div>
+	</li>
+	<li>
+	  <input type="range" min="0" max="3" value="0" class="slider" id="vertex">
+	  <div id="vertex-entry">0</div>	  
+	</li>	
+      </ul>
     </div>
+
+    <div>
+      <ul>
+	<li><a href="#" onclick="addNewShape();">Create sector</a></li>
+	<li><a href="#" onclick="deleteShape();">Delete active shape</a></li>	
+	<li><a href="#" onclick="addNewVertex();">Create vertex</a></li>
+	<li><a href="#" onclick="moveVertex();">Move active vertex</a></li>
+	<li><a href="#" onclick="deleteVertex();">Delete active vertex</a></li>
+      </ul>
+    </div>
+
     
     <div class="bordered">
       <div class="bordered" style="float:left">
@@ -60,34 +58,38 @@
       draw();
       
       const canvas = document.querySelector('canvas');
-      const slider = document.getElementById("paletteEntry");
-      const entry = document.getElementById("pet-entry");
-      const geometryType = document.getElementById("geometryType");
 
-      slider.oninput = function() {
-      entry.innerHTML = this.value;
-      updateActivePaletteEntry();
+      var shapeSlider = document.getElementById("shape");
+      var shapeEntry = document.getElementById("shape-entry");
+      var vertexSlider = document.getElementById("vertex");
+      var vertexEntry = document.getElementById("vertex-entry");      
+
+      shapeSlider.oninput = function() {
+      shapeEntry.innerHTML = this.value;
+      updateActiveShape(this.value);
+      }
+
+      vertexSlider.oninput = function() {
+      vertexEntry.innerHTML = this.value;
+      updateActiveVertex(this.value);
       } 
 
-      geometryType.oninput = function() {
-      setGeometryType(this.selectedIndex);
-      } 
+
 
 
       canvas.addEventListener('mousedown', function(e) {
 
       switch (e.button) {
       case 0:
-      getCursorPosition(canvas, e, slider.value);
-      entry.innerHTML = "" + slider.value;
+      getCursorPosition(canvas, e);
       break;
       case 1:
-      getIndexFromCursorPosition(canvas, e, slider);
       break;
       case 2:
-
       break;
       }
+
+      draw();
       });
 
 
