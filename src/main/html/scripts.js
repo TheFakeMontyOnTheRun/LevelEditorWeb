@@ -130,7 +130,7 @@ function draw() {
 	var entry;
 	ctx.lineWidth = 1;
 	ctx.fillStyle = '#FFF';
-	ctx.strokeStyle = '#666';
+	ctx.strokeStyle = '#999';
 	for ( y = 0; y < 64; ++y ) {
 	    for ( x = 0; x < 64; ++x ) {
 		ctx.fillRect( x * 8, y * 8, 8, 8);
@@ -178,7 +178,7 @@ function draw() {
 		    ctx.fillStyle = '#000';
 		}
 		
-		ctx.fillRect( shape.vertex[c].x * 8, shape.vertex[c].y * 8, 8, 8);	
+		ctx.fillRect( shape.vertex[c].x * 8 - 4, shape.vertex[c].y * 8 - 4, 8, 8);	
 		
 	    }
 
@@ -194,7 +194,7 @@ function draw() {
 		ctx.fillStyle = '#000';
 	    }	    
 	    
-	    ctx.fillRect( shape.vertex[0].x * 8, shape.vertex[0].y * 8, 8, 8);		    
+	    ctx.fillRect( shape.vertex[0].x * 8 - 4, shape.vertex[0].y * 8 - 4, 8, 8);		    
 	    
 	    ctx.stroke();   
 	}
