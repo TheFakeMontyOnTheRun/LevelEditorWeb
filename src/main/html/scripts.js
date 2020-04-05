@@ -17,21 +17,15 @@ class Vertex {
 class Shape {
     constructor(pivotX, pivotY) {
 	this.vertex = new Array(8);
-	this.usedVertex = 4;
+	this.usedVertex = 2;
 
 	this.vertex[0] = new Vertex();
 	this.vertex[1] = new Vertex();
-	this.vertex[2] = new Vertex();
-	this.vertex[3] = new Vertex();
 
 	this.vertex[0].x = pivotX - 1;
 	this.vertex[0].y = pivotY - 1;
 	this.vertex[1].x = pivotX + 1;
-	this.vertex[1].y = pivotY - 1;
-	this.vertex[2].x = pivotX + 1;
-	this.vertex[2].y = pivotY + 1;
-	this.vertex[3].x = pivotX - 1;
-	this.vertex[3].y = pivotY + 1;		
+	this.vertex[1].y = pivotY + 1;
 
 
 
@@ -130,7 +124,7 @@ function draw() {
 	var entry;
 	ctx.lineWidth = 1;
 	ctx.fillStyle = '#FFF';
-	ctx.strokeStyle = '#666';
+	ctx.strokeStyle = '#999';
 	for ( y = 0; y < 64; ++y ) {
 	    for ( x = 0; x < 64; ++x ) {
 		ctx.fillRect( x * 8, y * 8, 8, 8);
@@ -161,12 +155,9 @@ function draw() {
 		ctx.strokeStyle = '#000';
 	    }
 	    
-	    ctx.beginPath();
-	    ctx.moveTo( shape.vertex[0].x * 8, shape.vertex[0].y * 8);
 	    var c = 0;
 
 	    for ( c = 1; c < shape.usedVertex; ++c ) {
-		ctx.lineTo( shape.vertex[c].x * 8, shape.vertex[c].y * 8);
 
 		if (index == activeShape ) {
 		    if ( c == activeVertex ) {			
@@ -178,11 +169,14 @@ function draw() {
 		    ctx.fillStyle = '#000';
 		}
 		
-		ctx.fillRect( shape.vertex[c].x * 8, shape.vertex[c].y * 8, 8, 8);	
+		ctx.fillRect( shape.vertex[c].x * 8 - 4, shape.vertex[c].y * 8 - 4, 8, 8);	
 		
 	    }
 
-	    ctx.lineTo( shape.vertex[0].x * 8, shape.vertex[0].y * 8);
+
+	    ctx.beginPath();
+	    ctx.rect( shape.vertex[0].x * 8, shape.vertex[0].y * 8, (shape.vertex[1].x - shape.vertex[0].x) * 8, (shape.vertex[1].y - shape.vertex[0].y) * 8);
+	    ctx.stroke();
 
 	    if (index == activeShape ) {
 		if ( 0 == activeVertex ) {			
@@ -194,9 +188,8 @@ function draw() {
 		ctx.fillStyle = '#000';
 	    }	    
 	    
-	    ctx.fillRect( shape.vertex[0].x * 8, shape.vertex[0].y * 8, 8, 8);		    
+	    ctx.fillRect( shape.vertex[0].x * 8 - 4, shape.vertex[0].y * 8 - 4, 8, 8);		    
 	    
-	    ctx.stroke();   
 	}
     }
 
