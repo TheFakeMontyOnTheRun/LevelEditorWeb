@@ -94,7 +94,11 @@ function initWASM() {
 			imports.env.table = new WebAssembly.Table({ initial: 0, element: 'anyfunc' });
 		    }
 		    // Create the instance.
-		    return new WebAssembly.Instance(module, imports);
+
+		    let toReturn = new WebAssembly.Instance(module, imports);
+		    toReturn.module = module;
+		    toReturn.memory = imports.env.memory;
+		    return toReturn;
 		});
     }
     
@@ -102,10 +106,32 @@ function initWASM() {
     loadWebAssembly('demo.wasm')
 	.then(instance => {
 		var exports = instance.exports; // the exports of that instance
+		var Module = instance.module;
 		var func = exports.func;
 		
-		
-		alert("func is " + func());
+		const preview = document.querySelector('canvas#preview');
+		const memoryArray = new Uint8Array(instance.memory.buffer);
+		exports.getPixels(memoryArray, 320, 200);
+
+		var index = 0;
+		var x = 0;
+		var y = 0;
+		var ctx = preview.getContext('2d');
+		ctx.strokeStyle = '#F00';
+		ctx.lineWidth = 1;
+		ctx.fillStyle = '#FFF';
+		ctx.strokeStyle = '#999';
+
+		for (y = 0; y < 200; ++y ) {
+		    for (x = 0; x < 320; ++x ) {
+			if (memoryArray[index]) {
+			    ctx.fillRect( x, y, 1, 1);
+			}
+			index++;
+		    }
+		}
+
+		ctx.stroke();
 	    }
 	    );
     
@@ -115,7 +141,8 @@ function init() {
     addNewShape();
     addNewShape();
     totalShapes = 2;
-    //initWASM();
+    initWASM();
+
 }
 
 
