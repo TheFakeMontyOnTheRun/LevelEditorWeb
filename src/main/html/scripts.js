@@ -2,6 +2,8 @@
 
 var cursorX = 32;
 var cursorY = 32;
+var mouseX = 32;
+var mouseY = 32;
 var shapes = new Array(256);
 var totalShapes = 0;
 var activeVertex = 0;
@@ -165,7 +167,7 @@ function draw() {
 	    }
 	}
 
-	ctx.strokeStyle = '#F00';
+	ctx.strokeStyle = '#000';
 	ctx.beginPath();
 	ctx.moveTo(0, cursorY * 8);
 	ctx.lineTo(64 *8, (cursorY * 8));
@@ -174,6 +176,17 @@ function draw() {
 	ctx.beginPath();
 	ctx.moveTo((cursorX * 8), 0);
 	ctx.lineTo((cursorX * 8), 64 * 8);
+	ctx.stroke();
+
+	ctx.strokeStyle = '#F00';
+	ctx.beginPath();
+	ctx.moveTo(0, mouseY * 8);
+	ctx.lineTo(64 *8, (mouseY * 8));
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.moveTo((mouseX * 8), 0);
+	ctx.lineTo((mouseX * 8), 64 * 8);
 	ctx.stroke();
 
 
@@ -249,6 +262,13 @@ function updateActiveShape(shapeNum) {
 function updateActiveVertex(vertexNum) {
     activeVertex = vertexNum;
     draw();    
+}
+
+function updateMousePosition(canvas, event) {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = Math.round((event.clientX - 4 - rect.left) / 8);
+    mouseY = Math.round((event.clientY - 4 - rect.top) / 8);
+    draw();
 }
 
 function setCursorPosition(canvas, event) {
