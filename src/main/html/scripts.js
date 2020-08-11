@@ -251,7 +251,7 @@ function updateActiveVertex(vertexNum) {
     draw();    
 }
 
-function getCursorPosition(canvas, event) {
+function setCursorPosition(canvas, event) {
     const rect = canvas.getBoundingClientRect();
     cursorX = Math.round((event.clientX - 4 - rect.left) / 8);
     cursorY = Math.round((event.clientY - 4 - rect.top) / 8);
