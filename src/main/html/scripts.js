@@ -70,73 +70,66 @@ function httpPost(theUrl, data) {
 }
 
 function initWASM() {
+	
     // Check for wasm support.
     if (!('WebAssembly' in window)) {
 	alert('you need a browser with wasm support enabled :(');
     }
     
-    // Loads a WebAssembly dynamic library, returns a promise.
-    // imports is an optional imports object
-    function loadWebAssembly(filename, imports) {
-	// Fetch the file and compile it
-	return fetch(filename)
-	    .then(response => response.arrayBuffer())
-	    .then(buffer => WebAssembly.compile(buffer))
-	    .then(module => {
-		    // Create the imports for the module, including the
-		    // standard dynamic library imports
-		    imports = imports || {};
-		    imports.env = imports.env || {};
-		    imports.env.memoryBase = imports.env.memoryBase || 0;
-		    imports.env.tableBase = imports.env.tableBase || 0;
-		    if (!imports.env.memory) {
-			imports.env.memory = new WebAssembly.Memory({ initial: 256 });
-		    }
-		    if (!imports.env.table) {
-			imports.env.table = new WebAssembly.Table({ initial: 0, element: 'anyfunc' });
-		    }
-		    // Create the instance.
-
-		    let toReturn = new WebAssembly.Instance(module, imports);
-		    toReturn.module = module;
-		    toReturn.memory = imports.env.memory;
-		    return toReturn;
-		});
-    }
+    var request = new XMLHttpRequest();
     
-    // Main part of this example, loads the module and uses it.
-    loadWebAssembly('demo.wasm')
-	.then(instance => {
-		var exports = instance.exports; // the exports of that instance
-		var Module = instance.module;
-		var func = exports.func;
-		
-		const preview = document.querySelector('canvas#preview');
-		const memoryArray = new Uint8Array(instance.memory.buffer);
-		exports.getPixels(memoryArray, 320, 200);
-
-		var index = 0;
-		var x = 0;
-		var y = 0;
-		var ctx = preview.getContext('2d');
-		ctx.strokeStyle = '#F00';
-		ctx.lineWidth = 1;
-		ctx.fillStyle = '#FFF';
-		ctx.strokeStyle = '#999';
-
-		for (y = 0; y < 200; ++y ) {
-		    for (x = 0; x < 320; ++x ) {
-			if (memoryArray[index]) {
-			    ctx.fillRect( x, y, 1, 1);
-			}
-			index++;
-		    }
-		}
-
-		ctx.stroke();
-	    }
-	    );
+    var importObject = {
+            env: {
+            'memoryBase': 0,
+            'tableBase': 0,
+            'memory': new WebAssembly.Memory({initial: 256}),
+            'table': new WebAssembly.Table({initial: 256, element: 'anyfunc'}),
+            abort: function(){},
+            }
+       }
     
+    request.open('GET', 'demo.wasm');
+    request.responseType = 'arraybuffer';
+    request.send();
+
+    request.onload = function() {
+      var bytes = request.response;
+      WebAssembly.instantiate(bytes, importObject)
+      .then(results => {
+    	  
+    	  var exports = results.instance.exports; // the exports of that instance
+	  		var Module = results.instance.module;
+	  		var func = exports.func;
+	  		
+	  		const preview = document.querySelector('canvas#preview');
+	  		
+	  		
+	  		const memoryArray = new Uint8Array(importObject.env.memory.buffer);
+	  		
+	  		
+	  		exports.getPixels(memoryArray, 320, 200);
+	
+	  		var index = 0;
+	  		var x = 0;
+	  		var y = 0;
+	  		var ctx = preview.getContext('2d');
+	  		ctx.strokeStyle = '#F00';
+	  		ctx.lineWidth = 1;
+	  		ctx.fillStyle = '#FFF';
+	  		ctx.strokeStyle = '#999';
+	
+	  		for (y = 0; y < 200; ++y ) {
+	  		    for (x = 0; x < 320; ++x ) {
+	  			if (memoryArray[index]) {
+	  			    ctx.fillRect( x, y, 1, 1);
+	  			}
+	  			index++;
+	  		    }
+	  		}
+	
+	  		ctx.stroke();
+      });
+    };
 }
 
 function init() {
