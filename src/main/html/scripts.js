@@ -8,6 +8,9 @@ var shapes = new Array(256);
 var totalShapes = 0;
 var activeVertex = 0;
 var activeShape = 1;
+var wasmModule = {};
+var wasmMemory = {};
+var offset = 0;
 
 class Vertex {
     constructor() {
@@ -69,6 +72,39 @@ function httpPost(theUrl, data) {
     return xmlHttp.responseText;
 }
 
+function updateWASM() {
+    offset+= 5;
+    const preview = document.querySelector('canvas#preview');
+    
+    wasmModule.getPixels(wasmMemory, offset, 320, 200);
+    
+    var index = 0;
+    var x = 0;
+    var y = 0;
+    var ctx = preview.getContext('2d');
+    ctx.strokeStyle = '#F00';
+    ctx.lineWidth = 1;
+
+    ctx.fillStyle = '#000';
+    ctx.strokeStyle = '#999';
+
+    ctx.fillRect(0, 0, 320, 200);
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFF';
+    
+    for (y = 0; y < 200; ++y ) {
+	for (x = 0; x < 320; ++x ) {
+	    if (wasmMemory[index]) {
+		ctx.fillRect( x, y, 1, 1);
+	    }
+	    index++;
+	}
+    }
+    
+    ctx.stroke();
+}
+
 function initWASM() {
 	
     // Check for wasm support.
@@ -98,36 +134,15 @@ function initWASM() {
       .then(results => {
     	  
     	  var exports = results.instance.exports; // the exports of that instance
-	  		var Module = results.instance.module;
-	  		var func = exports.func;
-	  		
-	  		const preview = document.querySelector('canvas#preview');
-	  		
-	  		
-	  		const memoryArray = new Uint8Array(importObject.env.memory.buffer);
-	  		
-	  		
-	  		exports.getPixels(memoryArray, 320, 200);
-	
-	  		var index = 0;
-	  		var x = 0;
-	  		var y = 0;
-	  		var ctx = preview.getContext('2d');
-	  		ctx.strokeStyle = '#F00';
-	  		ctx.lineWidth = 1;
-	  		ctx.fillStyle = '#FFF';
-	  		ctx.strokeStyle = '#999';
-	
-	  		for (y = 0; y < 200; ++y ) {
-	  		    for (x = 0; x < 320; ++x ) {
-	  			if (memoryArray[index]) {
-	  			    ctx.fillRect( x, y, 1, 1);
-	  			}
-	  			index++;
-	  		    }
-	  		}
-	
-	  		ctx.stroke();
+	  var Module = results.instance.module;
+	  var func = exports.func;
+
+	  
+	  wasmModule = exports;	  		
+	  
+	  const memoryArray = new Uint8Array(importObject.env.memory.buffer);
+	  wasmMemory = memoryArray;
+	  updateWASM();
       });
     };
 }
@@ -143,6 +158,7 @@ function init() {
 
 
 function draw() {
+
     var canvas = document.getElementById('canvas');
     if (canvas.getContext) {
 	var ctx = canvas.getContext('2d');
@@ -159,7 +175,7 @@ function draw() {
 		ctx.strokeRect( x * 8, y * 8, 8, 8);
 	    }
 	}
-
+	
 	ctx.strokeStyle = '#000';
 	ctx.beginPath();
 	ctx.moveTo(0, cursorY * 8);
@@ -269,6 +285,7 @@ function setCursorPosition(canvas, event) {
     cursorX = Math.round((event.clientX - 4 - rect.left) / 8);
     cursorY = Math.round((event.clientY - 4 - rect.top) / 8);
     draw();
+    updateWASM();
 }
 
 function addNewShape() {
